@@ -8,7 +8,7 @@ load_dotenv()
 
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-S3_BUCKET = os.getenv("S3_BUCKET_NAME")  # you chose to use S3_BUCKET_NAME in .env
+S3_BUCKET = os.getenv("S3_BUCKET_NAME")
 S3_KEY = os.getenv("S3_KEY")
 REGION = os.getenv("AWS_REGION")
 
@@ -33,7 +33,7 @@ def upload_to_s3(local_file, bucket, s3_key):
 
 # Load data from S3 into Redshift
 def load_to_redshift():
-    conn = None  # Avoid UnboundLocalError if connection fails
+    conn = None
     try:
         conn = psycopg2.connect(
             host=REDSHIFT_HOST,
@@ -45,27 +45,27 @@ def load_to_redshift():
         cur = conn.cursor()
         print("Connected to Redshift")
 
-        # Create table if not exists
+        # Create schema-qualified table
         cur.execute("""
-    CREATE TABLE IF NOT EXISTS sales_data (
-        order_id VARCHAR(50),
-        customer_name VARCHAR(100),
-        region VARCHAR(100),
-        product VARCHAR(100),
-        quantity INT,
-        unit_price FLOAT,
-        total_price FLOAT,
-        timestamp TIMESTAMP
-        );
-     """) 
+            CREATE TABLE IF NOT EXISTS restaurant_etl.sales_data (
+                order_id VARCHAR(50),
+                customer_name VARCHAR(100),
+                region VARCHAR(100),
+                product VARCHAR(100),
+                quantity INT,
+                unit_price FLOAT,
+                total_price FLOAT,
+                timestamp TIMESTAMP
+            );
+        """)
         print("Table is ready")
 
         # Optional: Clear table first
-        cur.execute("DELETE FROM sales_data;")
+        cur.execute("DELETE FROM restaurant_etl.sales_data;")
 
         # Load data using COPY
         copy_command = f"""
-            COPY sales_data
+            COPY restaurant_etl.sales_data
             FROM 's3://{S3_BUCKET}/{S3_KEY}'
             IAM_ROLE '{REDSHIFT_IAM_ROLE}'
             REGION '{REGION}'
@@ -85,7 +85,7 @@ def load_to_redshift():
             conn.close()
             print("Redshift connection closed")
 
-# Optional upload (uncomment if needed)
+# Optional: Upload a CSV to S3 before loading (uncomment if needed)
 # upload_to_s3('data/sales_data.csv', S3_BUCKET, S3_KEY)
 
 # Load into Redshift
