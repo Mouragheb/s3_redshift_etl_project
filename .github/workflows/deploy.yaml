@@ -21,7 +21,7 @@ jobs:
       - name: Deploy to EC2 and run ETL
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "
-            cd S3_redshift_etl_project &&
+            cd s3_redshift_etl_project &&
             git pull origin main &&
             chmod +x deploy.sh &&
             ./deploy.sh
