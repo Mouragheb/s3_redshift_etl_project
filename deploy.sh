@@ -1,10 +1,9 @@
 #!/bin/bash
 
-echo "Activating virtual environment..."
-source venv/bin/activate
-
-echo "Installing requirements..."
-pip install -r requirements.txt
-
 echo "Running ETL script..."
+
+# Load environment variables from .env
+export $(grep -v '^#' .env | xargs)
+
+# Run ETL
 python3 scripts/s3_to_redshift_etl.py
